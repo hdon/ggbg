@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import os, sys, serial, select, string, gtk, gtk.glade, gobject
+import os, sys, select, gtk, gtk.glade, gobject
 
 class GGBG:
     def destroy(self, widget, data=None):
