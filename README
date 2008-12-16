@@ -1,0 +1,4 @@
+Initially this software will just run one collectible card game over a network
+with two players, but ultimately I hope to design a generic "board game"
+description framework.
+
