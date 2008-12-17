@@ -66,7 +66,7 @@ def client(sock):
                 buf = sock.recv(1)
                 # Check for disconnect
                 if len(buf) == 0:
-                    raise socket.error(107, 'apparent disconnection 1')
+                    raise socket.error(107, 'apparent disconnection')
                 bytes_remaining = ord(buf)+5
                 buf = ''
                 # Check that there is no more data available before returning control
@@ -78,7 +78,7 @@ def client(sock):
         more = sock.recv(bytes_remaining)
         # Check for disconnect
         if not more:
-            raise socket.error(107, 'apparent disconnection 2')
+            raise socket.error(107, 'apparent disconnection (packet dropped)')
         # Pump message packet buffering
         buf += more
         bytes_remaining -= len(more)
