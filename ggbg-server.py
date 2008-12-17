@@ -21,7 +21,9 @@ try:
                 socks.append(sock)
                 sock.send('HELLO!')
             else:
-                print 'received data:', sock.recv(1)
+                data = sock.recv(256)
+                print 'received data:', data
+                sock.send(data)
 
 except KeyboardInterrupt:
     print 'Bye'

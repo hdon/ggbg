@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os, sys, select, gtk, gtk.glade, gobject, socket
+from gtk import keysyms
 
 #class GSocket(socket.socket):
 #    def __init__(self):
@@ -15,9 +16,18 @@ class GGBG:
         return False
 
     def __init__(self):
+        self.sock = None
         self.gladeXML = gtk.glade.XML("ggbg.glade")
         self.window = self.gladeXML.get_widget('window1')
-        self.gladeXML.get_widget('button1').connect("clicked", self.button1)
+        self.gladeXML.signal_autoconnect({
+            'do_connect': self.do_connect,
+            'do_chat': self.do_chat,
+            'on_chat_entry_key_press_event': self.on_chat_entry_key_press_event
+        })
+        #self.gladeXML.get_widget('send_chat_button').connect("clicked", self.button1)
+        self.chat_entry = self.gladeXML.get_widget('chat_entry')
+        self.chat_history = self.gladeXML.get_widget('chat_history')
+        self.chat_history_scroller = self.gladeXML.get_widget('chat_history_scroller')
         self.window.connect("delete_event", self.delete_event)
         self.window.connect("destroy", self.destroy)
         self.window.show_all()
@@ -30,8 +40,21 @@ class GGBG:
             self.recv)
         print 'connect()', self.sock.connect(addr) # host, port
 
-    def button1(self, widget, data=None):
+    def on_chat_entry_key_press_event(self, widget, event, *data):
+        if event.keyval == keysyms.Return:
+            self.do_chat(widget, event, *data)
+
+    def do_connect(self, widget):
         self.connect(('localhost', 13111))
+
+    def do_chat(self, widget, *data):
+        msg = self.chat_entry.get_text()
+        if self.sock:
+            self.sock.send('CHAT\n%s\n' % msg)
+        self.chat_entry.set_text('')
+        history = self.chat_history.get_buffer()
+        history.insert(history.get_end_iter(), '\nscrub: %s' % msg)
+
 
     def recv(self, sock, evt, data=None):
         if evt == gobject.IO_HUP:
