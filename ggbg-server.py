@@ -34,14 +34,15 @@ def select(r, w, e, t=None):
             filter(lambda a:a[i] in w2, w),
             filter(lambda a:a[i] in e2, e))
 
-def tell(sock, msg):
+def tell(sock, msg1, msg2=''):
+    msg = msg1 + msg2
     if len(msg) > 256:
         raise IndexError("message length too long (%d > 256)" % len(msg))
     sock.send(chr(len(msg)) + msg)
 
 # Greenlet responsible for client interaction
 def client(sock):
-    tell(sock, 'CONNECT')
+    tell(sock, 'CHAT', 'Welcome to the server!')
     buf = '' # packet buffer
     msg = '' # finished packet, or blank string
     bytes_remaining = 0

@@ -8,7 +8,8 @@ from gtk import keysyms
 #        self.iochannel = gobject.IOChannel(self.fileno())
 #        gobject.io_add_watch(self.iochannel)
 
-def tell(sock, msg):
+def tell(sock, msg1, msg2=''):
+    msg = msg1 + msg2
     if len(msg) > 256:
         raise IndexError("message length too long (%d > 256)" % len(msg))
     sock.send(chr(len(msg)) + msg)
@@ -75,7 +76,12 @@ class GGBG:
             self.net_packet_len_remaining -= len(more)
             if self.net_packet_len_remaining == 0:
                 print 'received packet:', self.net_packet_buffer
+                self.handle_packet(self.net_packet_buffer[:4], self.net_packet_buffer[4:])
                 self.net_packet_buffer = ''
+
+    def handle_packet(self, code, data):
+        history = self.chat_history.get_buffer()
+        history.insert(history.get_end_iter(), '\n' + data)
 
     def main(self):
         gtk.main()
