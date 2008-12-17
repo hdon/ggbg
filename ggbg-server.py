@@ -19,7 +19,7 @@ def select(r, w, e, t=None):
 
     for i in range(len(x)): # identify proper tuple index 
         #print 'type check', i, type(x[i])
-        if type(x[i]) == socket.socket:
+        if isinstance(x[i], socket.socket):
             break
 
     if r: ra = zip(*r)[i]
@@ -55,7 +55,7 @@ def client(sock):
         growth = sock.recv(256)
         if not growth:
             raise socket.error(107, 'apparent disconnection')
-        print 'growth "%s"' % growth
+        print 'growth <<%s>>' % growth
         buf += growth
 
 def main():
