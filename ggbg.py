@@ -8,6 +8,11 @@ from gtk import keysyms
 #        self.iochannel = gobject.IOChannel(self.fileno())
 #        gobject.io_add_watch(self.iochannel)
 
+def tell(sock, msg):
+    if len(msg) > 256:
+        raise IndexError("message length too long (%d > 256)" % len(msg))
+    sock.send(chr(len(msg)) + msg)
+
 class GGBG:
     def destroy(self, widget, data=None):
         gtk.main_quit()
@@ -17,6 +22,9 @@ class GGBG:
 
     def __init__(self):
         self.sock = None
+        self.net_packet_buffer = ''
+        self.net_packet_len_remaining = 0
+
         self.gladeXML = gtk.glade.XML("ggbg.glade")
         self.window = self.gladeXML.get_widget('window1')
         self.gladeXML.signal_autoconnect({
@@ -50,7 +58,7 @@ class GGBG:
     def do_chat(self, widget, *data):
         msg = self.chat_entry.get_text()
         if self.sock:
-            self.sock.send('CHAT\n%s\n' % msg)
+            tell(self.sock, 'CHAT' + msg)
         self.chat_entry.set_text('')
         history = self.chat_history.get_buffer()
         history.insert(history.get_end_iter(), '\nscrub: %s' % msg)
@@ -60,8 +68,14 @@ class GGBG:
         if evt == gobject.IO_HUP:
             print 'disconnected!'
         elif evt == gobject.IO_IN:
-            data = sock.recv(10)
-            print 'received data', data
+            if self.net_packet_len_remaining == 0:
+                self.net_packet_len_remaining = ord(sock.recv(1))
+            more = sock.recv(self.net_packet_len_remaining)
+            self.net_packet_buffer += more
+            self.net_packet_len_remaining -= len(more)
+            if self.net_packet_len_remaining == 0:
+                print 'received packet:', self.net_packet_buffer
+                self.net_packet_buffer = ''
 
     def main(self):
         gtk.main()

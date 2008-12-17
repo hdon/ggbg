@@ -34,29 +34,50 @@ def select(r, w, e, t=None):
             filter(lambda a:a[i] in w2, w),
             filter(lambda a:a[i] in e2, e))
 
-def client(sock):
-    sock.send('CONNECT\n')
-    buf = ''
-    msg = ''
-    while 1:
-        # switch up to parent greenlet
-        if buf:
-            # pass up newline-broken messages to parent greenlet
-            while buf:
-                n = buf.find('\n')+1
-                if n <= 0: break
-                msg = buf[:n]
-                buf = buf[n:]
-                greenlet.getcurrent().parent.switch(msg)
-        else:
-            greenlet.getcurrent().parent.switch('')
+def tell(sock, msg):
+    if len(msg) > 256:
+        raise IndexError("message length too long (%d > 256)" % len(msg))
+    sock.send(chr(len(msg)) + msg)
 
-        # select() says our socket is readable any time we get to this point
-        growth = sock.recv(256)
-        if not growth:
-            raise socket.error(107, 'apparent disconnection')
-        print 'growth <<%s>>' % growth
-        buf += growth
+# Greenlet responsible for client interaction
+def client(sock):
+    tell(sock, 'CONNECT')
+    buf = '' # packet buffer
+    msg = '' # finished packet, or blank string
+    bytes_remaining = 0
+    while 1:
+        # Pass message packet up to parent greenlet
+        greenlet.getcurrent().parent.switch(msg)
+        msg = ''
+
+        # No message pending, return control to parent greenlet
+        if bytes_remaining == 0:
+            # When parent greenlet returns to us, we have a new data ready
+            buf = sock.recv(1)
+            # Check for disconnect
+            if len(buf) == 0:
+                raise socket.error(107, 'apparent disconnection 1')
+            bytes_remaining = ord(buf)
+            buf = ''
+            # Check that there is no more data available before returning control
+            r, w, e = select_call([sock], [], [])
+            if not r:
+                greenlet.getcurrent().parent.switch('')
+
+        # Receive more data
+        more = sock.recv(bytes_remaining)
+        # Check for disconnect
+        if not more:
+            raise socket.error(107, 'apparent disconnection 2')
+        # Pump message packet buffering
+        buf += more
+        bytes_remaining -= len(more)
+
+        # Message packet reception complete
+        if bytes_remaining == 0:
+            print 'packet:', buf
+            # Pass message packet up to parent greenlet
+            msg = buf
 
 def main():
     socks = [(server, greenlet.getcurrent(), HOST or '*')]
