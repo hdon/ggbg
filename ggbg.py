@@ -11,7 +11,7 @@ from gtk import keysyms
 def tell(sock, msg1, msg2=''):
     msg = msg1 + msg2
     if len(msg) > 256:
-        raise IndexError("message length too long (%d > 256)" % (len(msg)-1))
+        raise IndexError("message length too long (%d > 256)" % (len(msg)-5))
     sock.send(chr(len(msg)) + msg)
 
 class GGBG:
@@ -70,7 +70,7 @@ class GGBG:
             print 'disconnected!'
         elif evt == gobject.IO_IN:
             if self.net_packet_len_remaining == 0:
-                self.net_packet_len_remaining = ord(sock.recv(1)) + 1
+                self.net_packet_len_remaining = ord(sock.recv(1))+5
             more = sock.recv(self.net_packet_len_remaining)
             self.net_packet_buffer += more
             self.net_packet_len_remaining -= len(more)
