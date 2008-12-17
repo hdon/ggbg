@@ -36,9 +36,9 @@ def select(r, w, e, t=None):
 
 def tell(sock, msg1, msg2=''):
     msg = msg1 + msg2
-    if len(msg) > 256:
-        raise IndexError("message length too long (%d > 256)" % (len(msg)-1))
-    sock.send(chr(len(msg)) + msg)
+    if len(msg) > 260:
+        raise IndexError("message length too long (%d > 256)" % len(msg))
+    sock.send(chr(len(msg)-5) + msg)
 
 # Greenlet responsible for client interaction
 def client(sock):
@@ -58,7 +58,7 @@ def client(sock):
             # Check for disconnect
             if len(buf) == 0:
                 raise socket.error(107, 'apparent disconnection 1')
-            bytes_remaining = ord(buf)+1
+            bytes_remaining = ord(buf)+5
             buf = ''
             # Check that there is no more data available before returning control
             r, w, e = select_call([sock], [], [])

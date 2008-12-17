@@ -10,9 +10,9 @@ from gtk import keysyms
 
 def tell(sock, msg1, msg2=''):
     msg = msg1 + msg2
-    if len(msg) > 256:
-        raise IndexError("message length too long (%d > 256)" % (len(msg)-5))
-    sock.send(chr(len(msg)) + msg)
+    if len(msg) > 260:
+        raise IndexError("message length too long (%d > 260)" % len(msg))
+    sock.send(chr(len(msg)-5) + msg)
 
 class GGBG:
     def destroy(self, widget, data=None):
