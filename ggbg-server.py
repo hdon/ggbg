@@ -40,6 +40,14 @@ def tell(sock, msg1, msg2=''):
         raise IndexError("message length too long (%d > 256)" % len(msg))
     sock.send(chr(len(msg)-5) + msg)
 
+def broadcast(msg1, msg2=''):
+    global socks
+    msg = msg1 + msg2
+    if len(msg) > 260:
+        raise IndexError("message length too long (%d > 256)" % len(msg))
+    for sock, greenlet, hostname in socks[1:]:
+        tell(sock, msg)
+
 # Greenlet responsible for client interaction
 def client(sock):
     tell(sock, 'CHAT', 'Welcome to the server!')
@@ -50,6 +58,7 @@ def client(sock):
 
         # Received a partial packet; return control to parent greenlet while we wait for the rest of it
         if bytes_remaining:
+            print 'SWITCH: if bytes_remaining'
             greenlet.getcurrent().parent.switch(None)
 
         # In between incoming packets
@@ -57,22 +66,28 @@ def client(sock):
             # A packet was completed?
             if buf:
                 # Pass message packet up to parent greenlet
-                greenlet.getcurrent().parent.switch(buf)
+                print 'SWITCH: if buf'
+                greenlet.getcurrent().parent.switch(buf[:4], buf[4:])
                 buf = ''
 
-            # A packet is beginning...
-            else:
-                # When parent greenlet returns to us, we have a new data ready
-                buf = sock.recv(1)
-                # Check for disconnect
-                if len(buf) == 0:
-                    raise socket.error(107, 'apparent disconnection')
-                bytes_remaining = ord(buf)+5
-                buf = ''
-                # Check that there is no more data available before returning control
-                r, w, e = select_call([sock], [], [])
-                if not r:
-                    greenlet.getcurrent().parent.switch(None)
+        # A packet is beginning...
+        if (not bytes_remaining) and (not buf):
+            # When parent greenlet returns to us, we have a new data ready
+            buf = sock.recv(1)
+            # Check for disconnect
+            if len(buf) == 0:
+                raise socket.error(107, 'apparent disconnection')
+            bytes_remaining = ord(buf)+5
+            buf = ''
+            # Check that there is no more data available before returning control
+            print
+            print 'select_call()'
+            r, w, e = select_call([sock], [], [], 0)
+            print 'select_call() returned'
+            print
+            if not r:
+                print 'SWITCH: if not r'
+                greenlet.getcurrent().parent.switch(None)
             
         # Receive more data
         more = sock.recv(bytes_remaining)
@@ -84,6 +99,7 @@ def client(sock):
         bytes_remaining -= len(more)
 
 def main():
+    global socks
     socks = [(server, greenlet.getcurrent(), HOST or '*')]
 
     while 1:
@@ -100,9 +116,14 @@ def main():
                     socks.append( (sock, proc, addr) )
                     proc.switch(sock)
                 else:
-                    msg = proc.switch()
-                    if msg:
-                        print addr, msg
+                    val = proc.switch()
+                    if val:
+                        code, msg = val
+                        print addr, code, msg
+
+                        #if code == 'CHAT':
+                        #    broadcast(code, msg)
+
             except socket.error, e:
                 code = e[0]
                 if code in [104, 107]:
