@@ -54,7 +54,12 @@ class GGBG:
             self.do_chat(widget, event, *data)
 
     def do_connect(self, widget):
-        self.connect(('192.168.1.100', 13111))
+        dialog = self.gladeXML.get_widget('connect_dialog')
+        resp = dialog.run()
+        dialog.hide()
+        if resp == gtk.RESPONSE_OK:
+            host = self.gladeXML.get_widget('host_name_entry').get_text()
+            self.connect((host, 13111))
 
     def do_chat(self, widget, *data):
         msg = self.chat_entry.get_text()
@@ -80,6 +85,7 @@ class GGBG:
         #    self.recv)
         if evt == gobject.IO_HUP:
             print 'disconnected!'
+            self.disconnect()
         elif evt == gobject.IO_IN:
             if self.net_packet_len_remaining == 0:
                 data = sock.recv(1)
