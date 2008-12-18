@@ -36,15 +36,14 @@ def select(r, w, e, t=None):
 
 def tell(sock, msg1, msg2=''):
     msg = msg1 + msg2
-    if len(msg) > 260:
-        raise IndexError("message length too long (%d > 256)" % len(msg))
+    if len(msg) > 260 or len(msg) <= 0:
+        raise IndexError("message length too long (0 < %d < 260)" % len(msg))
     sock.send(chr(len(msg)-5) + msg)
 
 def broadcast(msg1, msg2=''):
     global socks
     msg = msg1 + msg2
-    if len(msg) > 260:
-        raise IndexError("message length too long (%d > 256)" % len(msg))
+    print 'broadcasting', msg
     for sock, greenlet, hostname in socks[1:]:
         tell(sock, msg)
 
@@ -121,8 +120,8 @@ def main():
                         code, msg = val
                         print addr, code, msg
 
-                        #if code == 'CHAT':
-                        #    broadcast(code, msg)
+                        if code == 'CHAT':
+                            broadcast(code, msg)
 
             except socket.error, e:
                 code = e[0]

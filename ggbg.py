@@ -10,8 +10,8 @@ from gtk import keysyms
 
 def tell(sock, msg1, msg2=''):
     msg = msg1 + msg2
-    if len(msg) > 260:
-        raise IndexError("message length too long (%d > 260)" % len(msg))
+    if len(msg) > 260 or len(msg) <= 0:
+        raise IndexError("message length too long (0 < %d < 260)" % len(msg))
     sock.send(chr(len(msg)-5) + msg)
 
 class GGBG:
