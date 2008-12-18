@@ -61,9 +61,11 @@ class GGBG:
         if self.sock:
             tell(self.sock, 'CHAT' + msg)
         self.chat_entry.set_text('')
-        history = self.chat_history.get_buffer()
-        history.insert(history.get_end_iter(), '\nscrub: %s' % msg)
+        self.print_to_chat_history('\nscrub: %s' % msg)
 
+    def print_to_chat_history(self, text):
+        history = self.chat_history.get_buffer()
+        history.insert(history.get_end_iter(), text)
 
     def recv(self, sock, evt, data=None):
         if evt == gobject.IO_HUP:
@@ -80,8 +82,10 @@ class GGBG:
                 self.net_packet_buffer = ''
 
     def handle_packet(self, code, data):
-        history = self.chat_history.get_buffer()
-        history.insert(history.get_end_iter(), '\n' + data)
+        if code == 'CHAT':
+            self.print_to_chat_history('\n' + data)
+        else:
+            print 'unknown packet type "%s"' % code
 
     def main(self):
         gtk.main()
