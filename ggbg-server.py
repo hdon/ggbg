@@ -36,16 +36,20 @@ def select(r, w, e, t=None):
 
 def tell(sock, msg1, msg2=''):
     msg = msg1 + msg2
+    print 'telling', sock, msg
     if len(msg) > 260 or len(msg) <= 0:
         raise IndexError("message length too long (0 < %d < 260)" % len(msg))
     sock.send(chr(len(msg)-5) + msg)
 
-def broadcast(msg1, msg2=''):
+def broadcast(msg1, msg2='', exclude=()):
     global socks
+    if not isinstance(exclude, (tuple, list)):
+        exclude = (exclude,)
     msg = msg1 + msg2
     print 'broadcasting', msg
     for sock, greenlet, hostname in socks[1:]:
-        tell(sock, msg)
+        if sock not in exclude:
+            tell(sock, msg)
 
 # Greenlet responsible for client interaction
 def client(sock):
@@ -121,7 +125,7 @@ def main():
                         print addr, code, msg
 
                         if code == 'CHAT':
-                            broadcast(code, msg)
+                            broadcast(code, msg, exclude=sock)
 
             except socket.error, e:
                 code = e[0]
