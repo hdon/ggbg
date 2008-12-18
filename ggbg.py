@@ -54,7 +54,7 @@ class GGBG:
             self.do_chat(widget, event, *data)
 
     def do_connect(self, widget):
-        self.connect(('localhost', 13111))
+        self.connect(('192.168.1.100', 13111))
 
     def do_chat(self, widget, *data):
         msg = self.chat_entry.get_text()
@@ -68,6 +68,10 @@ class GGBG:
         history.insert(history.get_end_iter(), text)
 
     def recv(self, sock, evt, data=None):
+        gobject.io_add_watch(
+            self.sock,
+            gobject.IO_IN | gobject.IO_HUP,
+            self.recv)
         if evt == gobject.IO_HUP:
             print 'disconnected!'
         elif evt == gobject.IO_IN:
