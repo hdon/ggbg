@@ -67,23 +67,39 @@ class GGBG:
         history = self.chat_history.get_buffer()
         history.insert(history.get_end_iter(), text)
 
+    def disconnect(self):
+        self.sock.close()
+        self.sock = None
+        self.net_packet_len_remaining = 0
+        self.net_packet_buffer = ''
+
     def recv(self, sock, evt, data=None):
-        gobject.io_add_watch(
-            self.sock,
-            gobject.IO_IN | gobject.IO_HUP,
-            self.recv)
+        #gobject.io_add_watch(
+        #    self.sock,
+        #    gobject.IO_IN | gobject.IO_HUP,
+        #    self.recv)
         if evt == gobject.IO_HUP:
             print 'disconnected!'
         elif evt == gobject.IO_IN:
             if self.net_packet_len_remaining == 0:
-                self.net_packet_len_remaining = ord(sock.recv(1))+5
+                data = sock.recv(1)
+                if not data:
+                    print 'apparent disconnection'
+                    self.disconnect()
+                    return False
+                self.net_packet_len_remaining = ord(data)+5
             more = sock.recv(self.net_packet_len_remaining)
+            if not more:
+                print 'apparent disconnection'
+                self.disconnect()
+                return False
             self.net_packet_buffer += more
             self.net_packet_len_remaining -= len(more)
             if self.net_packet_len_remaining == 0:
                 print 'received packet:', self.net_packet_buffer
                 self.handle_packet(self.net_packet_buffer[:4], self.net_packet_buffer[4:])
                 self.net_packet_buffer = ''
+        return True
 
     def handle_packet(self, code, data):
         if code == 'CHAT':
