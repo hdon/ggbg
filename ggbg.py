@@ -1,12 +1,27 @@
 #!/usr/bin/python
-import os, sys, select, gtk, gtk.glade, gobject, socket
+import os, sys, select, gtk, gtk.glade, gobject, socket, goocanvas
 from gtk import keysyms
+from games.mtg.game import MtgGame
 
 #class GSocket(socket.socket):
 #    def __init__(self):
 #        socket.socket.__init__(self, socket.AF_INET, socket.SOCK_STREAM)
 #        self.iochannel = gobject.IOChannel(self.fileno())
 #        gobject.io_add_watch(self.iochannel)
+
+def imgload(f):
+    '''Return a goocanvas.Image for a given path or file object'''
+    if isinstance(f, str):
+        f = open(f,'rb')
+    loader = gtk.gdk.pixbuf_loader_new_with_mime_type('image/jpeg')
+    loader.write(f.read())
+    pbuf = loader.get_pixbuf()
+    loader.close()
+    img = goocanvas.Image()
+    img.set_property('pixbuf', pbuf)
+    img.set_property('x', 0)
+    img.set_property('y', 0)
+    return img
 
 def tell(sock, msg1, msg2=''):
     msg = msg1 + msg2
@@ -34,12 +49,16 @@ class GGBG:
             'on_chat_entry_key_press_event': self.on_chat_entry_key_press_event
         })
         #self.gladeXML.get_widget('send_chat_button').connect("clicked", self.button1)
+        self.game_area = self.gladeXML.get_widget('game_area')
+        self.game_root = self.game_area.get_root_item()
         self.chat_entry = self.gladeXML.get_widget('chat_entry')
         self.chat_history = self.gladeXML.get_widget('chat_history')
         self.chat_history_scroller = self.gladeXML.get_widget('chat_history_scroller')
         self.window.connect("delete_event", self.delete_event)
         self.window.connect("destroy", self.destroy)
         self.window.show_all()
+
+        self.game = MtgGame(self.game_root, imgload)
 
     def connect(self, addr):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
