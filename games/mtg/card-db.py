@@ -7,7 +7,6 @@ card_details_re = re.compile(r'CardDetails\.aspx\?id=([0-9]+)')
 card_url_re = re.compile(r'http://[a-zA-Z0-9.]*wizards\.com/Magic/Cards/[^"]*Card[0-9]+.jpg')
 
 def get_card(name):
-    global db, BASE_URL, DETAIL_URL, CARD_IMAGE_PATH, card_details_re, card_url_re
     # Check database for cached result first
     dbc = db.cursor()
     dbc.execute("select id from mtg_card_images where name=?", [name])
@@ -20,7 +19,7 @@ def get_card(name):
         'Field_Name': 'on',
         'setfilter': urllib.quote('All sets')
     })
-    detail_ids = [int(x) for x card_details_re.findall(urllib.urlopen(url).read()))
+    detail_ids = [int(x) for x in card_details_re.findall(urllib.urlopen(url).read())]
     detail_ids.sort()
 
     # Look up individual printing of card
