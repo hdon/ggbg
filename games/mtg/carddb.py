@@ -1,5 +1,6 @@
 import os, sys, re, sqlite3, urllib
 
+DATABASE_FILENAME = os.path.join('games','mtg','mtg.card.db')
 BASE_URL = 'http://ww2.wizards.com/gatherer/index.aspx'
 DETAIL_URL = 'http://ww2.wizards.com/gatherer/CardDetails.aspx'
 CARD_IMAGE_PATH = os.path.join('games','mtg','card-images')
@@ -51,7 +52,7 @@ def get_card(name):
 
 def initialize():
     global db
-    db = sqlite3.connect('mtg.card.db')
+    db = sqlite3.connect(DATABASE_FILENAME)
     cursor = db.cursor()
     cursor.execute('create table if not exists mtg_card_images(name text, id int)')
     db.commit()
