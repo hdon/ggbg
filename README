@@ -2,3 +2,37 @@ Initially this software will just run one collectible card game over a network
 with two players, but ultimately I hope to design a generic "board game"
 description framework.
 
+Client dependencies:
+-------------------
+
+pysqlite3
+Python 2.5
+PIL http://www.pythonware.com/products/pil/
+GTK+
+PyGTK
+GooCanvas
+PyGooCanvas http://developer.berlios.de/projects/pygoocanvas/
+
+Windows users can download and run the following two installers:
+http://internap.dl.sourceforge.net/sourceforge/gladewin32/gtk-2.12.9-win32-2.exe
+http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.12/pygtk-2.12.1-2.win32-py2.5.exe
+
+Windows users can put these files into Python25\site-packages directory:
+http://sqlkit.argolinux.org/download/goocanvas.pyd
+http://ftp.gnome.org/pub/gnome/binaries/win32/goocanvas/0.10/goocanvas-0.10-win32.zip
+
+Windows users can install PIL with PEAK Easy Install with this command:
+easy_install PIL
+You can get that here PEAK Easy Install here:
+http://peak.telecommunity.com/DevCenter/EasyInstall
+
+Server dependencies:
+-------------------
+
+Greenlets (comes with "py lib" by default)
+http://codespeak.net/py/dist/greenlet.html
+If you have PEAK Easy Install, you can install py lib with this command:
+easy_install py
+You can get that here PEAK Easy Install here:
+http://peak.telecommunity.com/DevCenter/EasyInstall
+
