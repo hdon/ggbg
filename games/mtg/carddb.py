@@ -20,7 +20,16 @@ def get_card(name):
         'setfilter': urllib.quote('All sets')
     })
     detail_ids = [int(x) for x in card_details_re.findall(urllib.urlopen(url).read())]
-    detail_ids.sort()
+    # TODO implement an SGML parser!
+    # the search interface doesn't provide an "exact name" search mode, so
+    # searching for "island" results in cards like "island sanctuary," which
+    # unfortunately sometimes have a lower ID number than the one you wanted.
+    # This could potentially be solved with a *really* complex regular
+    # expression, but I Python's sgmllib can perform the task quite well and
+    # produces more maintainable code, and probably consume less memory with
+    # expensive regular expressions. Hopefully removing this sort will act as
+    # a temporary fix.
+    #detail_ids.sort()
 
     # Look up individual printing of card
     id = detail_ids[0]
