@@ -13,7 +13,7 @@ def imgload(f):
     '''Return a goocanvas.Image for a given path or file object'''
     if isinstance(f, str):
         f = open(f,'rb')
-    loader = gtk.gdk.pixbuf_loader_new_with_mime_type('image/jpeg')
+    loader = gtk.gdk.pixbuf_loader_new()
     loader.write(f.read())
     pbuf = loader.get_pixbuf()
     loader.close()
