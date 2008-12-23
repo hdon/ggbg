@@ -2,7 +2,7 @@ import os, sys, re, sqlite3, urllib
 
 BASE_URL = 'http://ww2.wizards.com/gatherer/index.aspx'
 DETAIL_URL = 'http://ww2.wizards.com/gatherer/CardDetails.aspx'
-CARD_IMAGE_PATH = 'card-images'
+CARD_IMAGE_PATH = os.path.join('games','mtg','card-images')
 card_details_re = re.compile(r'CardDetails\.aspx\?id=([0-9]+)')
 card_url_re = re.compile(r'http://[a-zA-Z0-9.]*wizards\.com/Magic/Cards/[^"]*Card[0-9]+.jpg')
 
