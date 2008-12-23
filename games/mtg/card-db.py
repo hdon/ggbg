@@ -20,8 +20,7 @@ def get_card(name):
         'Field_Name': 'on',
         'setfilter': urllib.quote('All sets')
     })
-    detail_ids = map(lambda s: int(s),
-        card_details_re.findall(urllib.urlopen(url).read()))
+    detail_ids = [int(x) for x card_details_re.findall(urllib.urlopen(url).read()))
     detail_ids.sort()
 
     # Look up individual printing of card
